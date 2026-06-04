@@ -16,4 +16,4 @@ jobs:
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git push --force https://Naysnaila:$HF_TOKEN@huggingface.co/spaces/Naysnaila/stk-liputan6-backend main
+          git push --force https://Naysnaila:$HF_TOKEN@huggingface.co/spaces/Naysnaila/projekstk-liputan6-backend main
