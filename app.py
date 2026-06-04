@@ -9,7 +9,12 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 import gradio as gr
 
-# --- Pengaturan Path untuk Folder Data (Sudah disesuaikan untuk posisi app.py) ---
+# --- Tambahkan library untuk API dan CORS ---
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import uvicorn
+
+# --- Pengaturan Path untuk Folder Data ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_PATH = os.path.join(BASE_DIR, 'data') 
 
@@ -29,9 +34,10 @@ stopword_remover = stop_factory.create_stop_word_remover()
 
 vectorizer = TfidfVectorizer(use_idf=True)
 
-def search_documents(query_text, use_expansion=True, top_k=5):
+# --- FUNGSI UTAMA: Mengambil Data Mentah dari Model (Dipakai Bersama) ---
+def get_search_data(query_text, use_expansion=True, top_k=5):
     if not query_text.strip():
-        return "Masukkan query terlebih dahulu."
+        return []
 
     query = query_text.lower()
     remove_punctuation_map = dict((ord(char), None) for char in string.punctuation)
@@ -76,8 +82,7 @@ def search_documents(query_text, use_expansion=True, top_k=5):
             set_result.add(item[0])
             new_result.append(item)
 
-    # Format output Markdown untuk Gradio
-    output = ""
+    results_list = []
     shown = 0
     for item in new_result:
         if item[0] == 0:
@@ -85,18 +90,38 @@ def search_documents(query_text, use_expansion=True, top_k=5):
         if shown >= top_k:
             break
         doc_idx = item[0] - 1
-        score = item[1]
+        score = float(item[1])
         judul = paper[doc_idx]['judul']
         text_preview = paper[doc_idx]['text'][:300] + "..."
         url = paper[doc_idx]['url']
-        output += f"### {shown+1}. {judul}\n"
-        output += f"**Score:** {score:.4f} | **Query:** {item[2][0]}\n\n"
-        output += f"{text_preview}\n\n"
-        output += f"[Baca selengkapnya]({url})\n\n---\n\n"
+        
+        results_list.append({
+            "judul": judul,
+            "score": score,
+            "expanded_query": item[2][0],
+            "text_snippet": text_preview,
+            "url": url
+        })
         shown += 1
+        
+    return results_list
 
-    if not output:
+# --- Fungsi Output Markdown Khusus untuk Tampilan Gradio ---
+def search_documents(query_text, use_expansion=True, top_k=5):
+    if not query_text.strip():
+        return "Masukkan query terlebih dahulu."
+        
+    results = get_search_data(query_text, use_expansion, top_k)
+    
+    if not results:
         return "Tidak ada dokumen yang relevan ditemukan."
+        
+    output = ""
+    for i, r in enumerate(results):
+        output += f"### {i+1}. {r['judul']}\n"
+        output += f"**Score:** {r['score']:.4f} | **Query:** {r['expanded_query']}\n\n"
+        output += f"{r['text_snippet']}\n\n"
+        output += f"[Baca selengkapnya]({r['url']})\n\n---\n\n"
     return output
 
 def gradio_search(query, mode, top_k):
@@ -126,6 +151,28 @@ with gr.Blocks(title="Sistem Temu Kembali Informasi") as demo:
         outputs=output
     )
 
-# Jalankan Gradio
+# --- PENGATURAN FASTAPI & CORS (Untuk Backend Vercel) ---
+app = FastAPI()
+
+# Mengizinkan Vercel (dan domain mana pun) mengakses API ini tanpa diblokir CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Jalur API JSON yang dipanggil oleh fetch() di index.html Vercel
+@app.get("/api/search")
+def search_api(q: str = "", expand: str = "true"):
+    use_exp = expand.lower() == "true"
+    results = get_search_data(q, use_expansion=use_exp, top_k=5)
+    return {"results": results}
+
+# Satukan Gradio ke dalam FastAPI utama
+app = gr.mount_to_fastapi(app, demo, path="/")
+
 if __name__ == '__main__':
-    demo.launch()
+    # Jalankan server menggunakan uvicorn pada port standar Hugging Face (7860)
+    uvicorn.run(app, host="0.0.0.0", port=7860)
