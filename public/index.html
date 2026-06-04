@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem IR Berita</title>
+    <style>
+        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .result-card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
+        .score { color: green; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h2>🔍 Sistem Temu Kembali Informasi</h2>
+    <input type="text" id="query" placeholder="Masukkan kata kunci (ex: presiden)" style="width: 70%; padding: 0.5rem;">
+    <button onclick="searchDoc()" style="padding: 0.5rem;">Cari</button>
+    <br><br>
+    <label><input type="checkbox" id="expand" checked> Gunakan Query Expansion</label>
+    
+    <div id="results" style="margin-top: 2rem;"></div>
+
+    <script>
+        async function searchDoc() {
+            const q = document.getElementById('query').value;
+            const expand = document.getElementById('expand').checked;
+            const resDiv = document.getElementById('results');
+            
+            resDiv.innerHTML = "Mencari dokumen...";
+            
+            try {
+                const response = await fetch(`/api/search?q=${q}&expand=${expand}`);
+                const data = await response.json();
+                
+                if(data.results.length === 0) {
+                    resDiv.innerHTML = "Tidak ada dokumen yang relevan.";
+                    return;
+                }
+
+                resDiv.innerHTML = data.results.map(r => `
+                    <div class="result-card">
+                        <h3><a href="${r.url}" target="_blank">${r.judul}</a></h3>
+                        <p class="score">Skor Kemiripan: ${r.score.toFixed(4)} | Query: ${r.expanded_query}</p>
+                        <p>${r.text_snippet}</p>
+                    </div>
+                `).join('');
+            } catch (err) {
+                resDiv.innerHTML = "Terjadi kesalahan pada server.";
+            }
+        }
+    </script>
+</body>
+</html>
