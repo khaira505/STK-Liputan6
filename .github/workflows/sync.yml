@@ -8,12 +8,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          lfs: true
 
-      - name: Push to HF
+      - name: Install Hugging Face Hub
+        run: pip install huggingface_hub
+
+      - name: Push to HF using API
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
         run: |
-          git push --force https://Naysnaila:$HF_TOKEN@huggingface.co/spaces/Naysnaila/projekstk-liputan6-backend main
+          python -c "
+          from huggingface_hub import HfApi
+          api = HfApi(token='${{ secrets.HF_TOKEN }}')
+          api.upload_folder(
+              folder_path='.',
+              repo_id='Naysnaila/projekstk-liputan6-backend',
+              repo_type='space',
+              ignore_patterns=['.git/*', '.github/*']
+          )
+          "
