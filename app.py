@@ -173,6 +173,6 @@ def search_api(q: str = "", expand: str = "true"):
 # Satukan Gradio ke dalam FastAPI utama
 app = gr.mount_to_fastapi(app, demo, path="/")
 
-if __name__ == '__main__':
-    # Jalankan server menggunakan uvicorn pada port standar Hugging Face (7860)
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+# JALANKAN LANGSUNG TANPA KONDISI 'if __name__ == "__main__":'
+# Pastikan posisinya rata kiri (tanpa spasi/indentasi di depannya)
+uvicorn.run(app, host="0.0.0.0", port=7860)
