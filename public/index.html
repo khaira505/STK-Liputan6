@@ -29,7 +29,7 @@
             
             try {
                 // BARIS INI SUDAH DIUBAH: Menuju langsung ke API Hugging Face Space kamu
-                const response = await fetch(`https://naysnaila-projekstk-liputan6-backend.hf.space/api/search?q=${q}&expand=${expand}`);
+                const response = await fetch(`https://naysnaila-projekstk-liputan6-backend.hf.space/search-news?q=${q}&expand=${expand}`);
                 const data = await response.json();
                 
                 if(data.results.length === 0) {
