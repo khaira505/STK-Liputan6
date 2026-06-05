@@ -25,14 +25,25 @@
             const expand = document.getElementById('expand').checked;
             const resDiv = document.getElementById('results');
             
+            if (!q.trim()) {
+                resDiv.innerHTML = "Silakan masukkan kata kunci terlebih dahulu.";
+                return;
+            }
+            
             resDiv.innerHTML = "Mencari dokumen...";
             
             try {
-                // BARIS INI SUDAH DIUBAH: Menuju langsung ke API Hugging Face Space kamu
-                const response = await fetch(`https://naysnaila-projekstk-liputan6-backend.hf.space/search-news?q=${q}&expand=${expand}`);
+                // PERBAIKAN: Mengarah langsung ke routing internal Vercel (/search-news)
+                // tanpa embel-embel domain luar/Hugging Face agar terbebas dari masalah CORS.
+                const response = await fetch(`/search-news?q=${encodeURIComponent(q)}&expand=${expand}`);
+                
+                if (!response.ok) {
+                    throw new Error("Respons server bermasalah");
+                }
+                
                 const data = await response.json();
                 
-                if(data.results.length === 0) {
+                if(!data.results || data.results.length === 0) {
                     resDiv.innerHTML = "Tidak ada dokumen yang relevan.";
                     return;
                 }
@@ -45,6 +56,7 @@
                     </div>
                 `).join('');
             } catch (err) {
+                console.error("Detail Error:", err);
                 resDiv.innerHTML = "Terjadi kesalahan pada server.";
             }
         }

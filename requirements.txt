@@ -1,6 +1,4 @@
-gradio
+fastapi
 scikit-learn
 numpy
 Sastrawi
-pandas
-openpyxl
