@@ -9,10 +9,8 @@ from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
 from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 import gradio as gr
 
-# --- Tambahkan library untuk API dan CORS ---
-from fastapi import FastAPI
+# --- Tambahkan library untuk CORS ---
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
 
 # --- Pengaturan Path untuk Folder Data ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -151,10 +149,11 @@ with gr.Blocks(title="Sistem Temu Kembali Informasi") as demo:
         outputs=output
     )
 
-# --- PENGATURAN FASTAPI & CORS (Untuk Backend Vercel) ---
-app = FastAPI()
+# --- JALUR AMAN KHUSUS UNTUK HUGGING FACE GRADIO SDK ---
+# Kita ambil instance FastAPI internal bawaan Gradio agar tidak tabrakan port/proses
+app = demo.app
 
-# Mengizinkan Vercel (dan domain mana pun) mengakses API ini tanpa diblokir CORS
+# Tambahkan CORS langsung ke dalam server Gradio agar website Vercel-mu diizinkan masuk
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -163,16 +162,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Jalur API JSON yang dipanggil oleh fetch() di index.html Vercel
+# Tambahkan endpoint API JSON yang akan ditembak oleh index.html milik Vercel
 @app.get("/api/search")
 def search_api(q: str = "", expand: str = "true"):
     use_exp = expand.lower() == "true"
     results = get_search_data(q, use_expansion=use_exp, top_k=5)
     return {"results": results}
 
-# Satukan Gradio ke dalam FastAPI utama
-app = gr.mount_to_fastapi(app, demo, path="/")
-
-# JALANKAN LANGSUNG TANPA KONDISI 'if __name__ == "__main__":'
-# Pastikan posisinya rata kiri (tanpa spasi/indentasi di depannya)
-uvicorn.run(app, host="0.0.0.0", port=7860)
+# Jalankan aplikasi menggunakan fungsi launch resmi Gradio.
+# Hugging Face akan otomatis mengatur port 7860 secara aman di balik layar.
+demo.launch()
