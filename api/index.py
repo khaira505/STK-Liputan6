@@ -45,7 +45,7 @@ def read_root():
     return {"status": "Backend SvelteKit/FastAPI aktif dan berjalan lancar"}
 
 # Rute Utama Pencarian yang dipanggil oleh vercel.json dan index.html kamu
-@app.get("/api/search-news")
+@app.get("/search-news")
 def search_api(q: str = "", expand: str = "true"):
     if not q.strip():
         return {"results": []}
