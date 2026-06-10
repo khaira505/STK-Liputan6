@@ -1,65 +1,91 @@
-<!DOCTYPE html>
-<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistem IR Berita</title>
-    <style>
-        body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-        .result-card { border: 1px solid #ddd; padding: 1rem; margin-bottom: 1rem; border-radius: 8px; }
-        .score { color: green; font-size: 0.9em; }
-    </style>
+    <title>Sistem Temu Kembali Informasi</title>
+
+    <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
-    <h2>🔍 Sistem Temu Kembali Informasi</h2>
-    <input type="text" id="query" placeholder="Masukkan kata kunci (ex: presiden)" style="width: 70%; padding: 0.5rem;">
-    <button onclick="searchDoc()" style="padding: 0.5rem;">Cari</button>
-    <br><br>
-    <label><input type="checkbox" id="expand" checked> Gunakan Query Expansion</label>
-    
-    <div id="results" style="margin-top: 2rem;"></div>
 
-    <script>
-        async function searchDoc() {
-            const q = document.getElementById('query').value;
-            const expand = document.getElementById('expand').checked;
-            const resDiv = document.getElementById('results');
-            
-            if (!q.trim()) {
-                resDiv.innerHTML = "Silakan masukkan kata kunci terlebih dahulu.";
-                return;
-            }
-            
-            resDiv.innerHTML = "Mencari dokumen...";
-            
-            try {
-                // PERBAIKAN: Mengarah langsung ke routing internal Vercel (/search-news)
-                // tanpa embel-embel domain luar/Hugging Face agar terbebas dari masalah CORS.
-                const response = await fetch(`/search-news?q=${encodeURIComponent(q)}&expand=${expand}`);
-                
-                if (!response.ok) {
-                    throw new Error("Respons server bermasalah");
-                }
-                
-                const data = await response.json();
-                
-                if(!data.results || data.results.length === 0) {
-                    resDiv.innerHTML = "Tidak ada dokumen yang relevan.";
-                    return;
-                }
+    <div class="container">
 
-                resDiv.innerHTML = data.results.map(r => `
-                    <div class="result-card">
-                        <h3><a href="${r.url}" target="_blank">${r.judul}</a></h3>
-                        <p class="score">Skor Kemiripan: ${r.score.toFixed(4)} | Query: ${r.expanded_query}</p>
-                        <p>${r.text_snippet}</p>
-                    </div>
-                `).join('');
-            } catch (err) {
-                console.error("Detail Error:", err);
-                resDiv.innerHTML = "Terjadi kesalahan pada server.";
-            }
-        }
-    </script>
+        <div class="hero">
+
+            <h1>Sistem Temu Kembali</h1>
+            <h1>Liputan6</h1>
+
+            <p>
+                Pencarian berita menggunakan TF-IDF,
+                Cosine Similarity dan Query Expansion
+            </p>
+
+            <div class="search-box">
+                <input type="text" id="query" placeholder="Masukkan kata kunci...">
+
+                <button onclick="searchDoc()">
+                    Cari
+                </button>
+            </div>
+
+            <div class="option">
+                <label>
+                    <input type="checkbox" id="expand" checked>
+                    Gunakan Query Expansion
+                </label>
+            </div>
+
+        </div>
+
+        <!-- INFO HASIL -->
+        <div id="search-info">
+
+            <div class="stats-bar">
+
+                <div class="stat">
+                    <span id="total-result">0</span>
+                    <small>Hasil</small>
+                </div>
+
+                <div class="stat">
+                    <span id="search-time">0</span>
+                    <small>ms</small>
+                </div>
+
+                <div class="stat">
+                    <span id="search-mode">QE ON</span>
+                    <small>Mode</small>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="evaluation-card">
+
+            <h2>📊 Evaluasi Sistem</h2>
+
+            <div class="eval-inputs">
+
+                <input type="number" id="groundTruth" placeholder="Ground Truth (jumlah dokumen relevan)">
+
+                <input type="number" id="truePositive" placeholder="Dokumen relevan yang ditemukan (TP)">
+
+                <button onclick="calculateMetrics()">
+                    Hitung Evaluasi
+                </button>
+
+            </div>
+
+            <div id="evaluation-result"></div>
+
+        </div>
+
+        <!-- HASIL PENCARIAN -->
+        <div id="results"></div>
+
+    </div>
+
+    <script src="script.js"></script>
+
 </body>
-</html>

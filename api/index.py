@@ -97,8 +97,7 @@ def search_api(q: str = "", expand: str = "true"):
     for item in new_result:
         if item[0] == 0:
             continue
-        if shown >= 5:
-            break
+        
         doc_idx = item[0] - 1
         
         results_list.append({
