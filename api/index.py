@@ -24,6 +24,14 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_PATH = os.path.join(BASE_DIR, 'data')
 
+@app.get("/debug")
+def debug():
+    return {
+        "base_dir": BASE_DIR,
+        "data_path": DATA_PATH,
+        "files": os.listdir(DATA_PATH)
+    }
+
 # Load data pickle lokal
 with open(os.path.join(DATA_PATH, 'articles.pkl'), 'rb') as f:
     paper = pickle.load(f)
