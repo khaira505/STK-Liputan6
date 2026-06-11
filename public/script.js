@@ -37,8 +37,13 @@ async function searchDoc() {
 `;
 
     try {
+        const API_URL =
+            location.hostname === "127.0.0.1"
+                ? "http://127.0.0.1:8000/search-news"
+                : "/search-news";
+
         const response = await fetch(
-            `http://127.0.0.1:8000/search-news?q=${encodeURIComponent(q)}&expand=${expand}`
+            `${API_URL}?q=${encodeURIComponent(q)}&expand=${expand}`
         );
 
         if (!response.ok) {

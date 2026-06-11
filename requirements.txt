@@ -1,4 +1,7 @@
 fastapi
+uvicorn
 scikit-learn
 numpy
 Sastrawi
+pandas
+openpyxl

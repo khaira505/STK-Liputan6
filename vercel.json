@@ -1,12 +1,12 @@
 {
-  "rewrites": [
-    {
-      "source": "/search-news",
-      "destination": "/api/index.py"
-    },
-    {
-      "source": "/",
-      "destination": "/public/index.html"
-    }
-  ]
+"rewrites": [
+{
+"source": "/search-news",
+"destination": "/api/index.py"
+},
+{
+"source": "/(.*)",
+"destination": "/public/index.html"
+}
+]
 }
