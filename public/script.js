@@ -38,7 +38,8 @@ async function searchDoc() {
 
     try {
         const API_URL =
-            location.hostname === "127.0.0.1"
+            (location.hostname === "127.0.0.1" ||
+                location.hostname === "localhost")
                 ? "http://127.0.0.1:8000/search-news"
                 : "/search-news";
 
