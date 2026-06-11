@@ -40,9 +40,9 @@ stopword_remover = stop_factory.create_stop_word_remover()
 vectorizer = TfidfVectorizer(use_idf=True)
 
 # Tambahkan rute fallback ke / agar Vercel mendeteksi backend aktif
-@app.get("/")
-def read_root():
-    return {"status": "Backend SvelteKit/FastAPI aktif dan berjalan lancar"}
+#@app.get("/")
+#def read_root():
+#    return {"status": "Backend SvelteKit/FastAPI aktif dan berjalan lancar"}
 
 # Rute Utama Pencarian yang dipanggil oleh vercel.json dan index.html kamu
 @app.get("/search-news")
